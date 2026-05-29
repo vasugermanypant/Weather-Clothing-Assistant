@@ -1,115 +1,124 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Weather Clothing Advisor</title>
 
     <style>
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #74ebd5, #9face6);
             min-height: 100vh;
+            background: linear-gradient(135deg, #89f7fe, #66a6ff);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
 
         .card {
             background: white;
+            width: 460px;
             padding: 35px;
-            border-radius: 20px;
-            width: 420px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-radius: 22px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        p {
+            text-align: center;
+            color: #6b7280;
         }
 
         input {
             width: 100%;
-            padding: 14px;
-            margin-top: 15px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
+            padding: 15px;
+            margin-top: 20px;
             font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            box-sizing: border-box;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 10px;
-            background: #4f46e5;
+            padding: 15px;
+            margin-top: 18px;
+            background: #2563eb;
             color: white;
+            border: none;
             font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
             cursor: pointer;
         }
 
         button:hover {
-            background: #3730a3;
+            background: #1d4ed8;
         }
 
         #result {
-            margin-top: 25px;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 10px;
+            margin-top: 24px;
+            background: #f9fafb;
+            border-left: 5px solid #2563eb;
+            padding: 18px;
+            border-radius: 12px;
             white-space: pre-wrap;
             color: #111827;
+            display: none;
+        }
+
+        .loading {
+            color: #2563eb;
+            font-weight: bold;
         }
     </style>
-
 </head>
 
 <body>
 
-    <div class="card">
+<div class="card">
+    <h1>🌦️ Weather Clothing Advisor</h1>
+    <p>Enter your location and get weather-based clothing advice.</p>
 
-        <h1>🌦️ Weather Clothing Advisor</h1>
+    <input
+        type="text"
+        id="location"
+        placeholder="Example: Delhi, Mumbai, London"
+    >
 
-        <input
-            id="location"
-            placeholder="Enter location e.g. Delhi, Tokyo, London"
-        >
+    <button onclick="getWeatherAdvice()">Get Advice</button>
 
-        <button onclick="getAdvice()">
-            Get Clothing Advice
-        </button>
-
-        <div id="result"></div>
-
-    </div>
+    <div id="result"></div>
+</div>
 
 <script>
+async function getWeatherAdvice() {
+    const locationInput = document.getElementById("location");
+    const resultDiv = document.getElementById("result");
 
-async function getAdvice() {
+    const location = locationInput.value.trim();
 
-    const location = document.getElementById("location").value;
+    resultDiv.style.display = "block";
 
-    const result = document.getElementById("result");
-
-    if (!location.trim()) {
-
-        result.innerText = "Please enter a location.";
-
+    if (!location) {
+        resultDiv.innerText = "Please enter a location.";
         return;
     }
 
-    result.innerText = "Checking weather...";
+    resultDiv.innerHTML = '<span class="loading">Fetching weather and clothing advice...</span>';
 
     try {
-
         const response = await fetch("/weather-clothing", {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 location: location
             })
@@ -117,19 +126,20 @@ async function getAdvice() {
 
         const data = await response.json();
 
-        result.innerText =
-            "Location: " + data.location + "\n\n" +
-            "Weather Information:\n" +
-            data.weather_summary + "\n\n" +
-            "Clothing Advice:\n" +
-            data.clothing_advice;
+        if (!response.ok) {
+            resultDiv.innerText = "Error: " + (data.detail || "Request failed.");
+            return;
+        }
 
-    } catch(error) {
+        resultDiv.innerText =
+            "📍 Location: " + data.location + "\n\n" +
+            "🌤️ Weather Information:\n" + data.weather_summary + "\n\n" +
+            "👕 Clothing Advice:\n" + data.clothing_advice;
 
-        result.innerText = "Error: " + error;
+    } catch (error) {
+        resultDiv.innerText = "Network or server error: " + error.message;
     }
 }
-
 </script>
 
 </body>
