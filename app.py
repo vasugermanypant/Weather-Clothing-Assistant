@@ -18,13 +18,16 @@ from langchain_openai import ChatOpenAI
 
 
 # =========================
-# LOAD ENVIRONMENT VARIABLES
+# LOAD ENV VARIABLES
 # =========================
 
-load_dotenv()
+load_dotenv(dotenv_path=".env")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+print("OPENAI_API_KEY loaded:", bool(OPENAI_API_KEY))
+print("OPENAI_MODEL:", OPENAI_MODEL)
 
 
 # =========================
@@ -135,34 +138,42 @@ def clothing_node(state):
 
         return state
 
-    llm = ChatOpenAI(
-        model=OPENAI_MODEL,
-        temperature=0.2,
-        api_key=OPENAI_API_KEY
-    )
+    try:
 
-    prompt = (
-        "You are a practical clothing advisor.\\n\\n"
+        llm = ChatOpenAI(
+            model=OPENAI_MODEL,
+            temperature=0.2,
+            api_key=OPENAI_API_KEY
+        )
 
-        f"Location:\\n{state['location']}\\n\\n"
+        prompt = (
+            "You are a practical clothing advisor.\\n\\n"
 
-        f"Weather Information:\\n"
-        f"{state['weather_summary']}\\n\\n"
+            f"Location:\\n{state['location']}\\n\\n"
 
-        "Suggest practical clothing.\\n"
-        "Mention:\\n"
-        "- clothes\\n"
-        "- shoes\\n"
-        "- umbrella if needed\\n"
-        "- jacket if needed\\n"
-        "- sunscreen if needed\\n\\n"
+            f"Weather Information:\\n"
+            f"{state['weather_summary']}\\n\\n"
 
-        "Keep answer concise and useful."
-    )
+            "Suggest practical clothing.\\n"
+            "Mention:\\n"
+            "- clothes\\n"
+            "- shoes\\n"
+            "- umbrella if needed\\n"
+            "- jacket if needed\\n"
+            "- sunscreen if needed\\n\\n"
 
-    response = llm.invoke(prompt)
+            "Keep answer concise and useful."
+        )
 
-    state["clothing_advice"] = response.content
+        response = llm.invoke(prompt)
+
+        state["clothing_advice"] = response.content
+
+    except Exception as e:
+
+        state["clothing_advice"] = (
+            f"OPENAI ERROR: {str(e)}"
+        )
 
     return state
 
